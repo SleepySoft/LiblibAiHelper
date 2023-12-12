@@ -1,0 +1,127 @@
+我想写一个油猴脚本，在 https://www.liblib.art/modelinfo/ 网站的模型页面中，在“立即生图”的按钮旁边添加一个“一键下载”按钮。这个“立即生图”按钮的HTML元素如下所示。如果找不到这个按钮，说明还不在模型页面，不需要做任何事情。
+"""
+<div class="ModelActionCard_runPic__0I9wi"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAABYlAAAWJQFJUiTwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAHESURBVHgB7ZmBbcIwEEUvVQfoCBmBETICI2SDdgOyASOEDVAnSDdgBNiAbvDrE0a6BhsIju1D+EkWJDj2/+HOsR2iQuG1qWgiAD7Mx9IeHqqq+qFngIWbssYle1Na0o4RucN12EhNGuE7PBI7mLK1osf06oxYwWc6cb7mY7hZ4ZQv+Rnd6drxOxvZwB1WLeXmlgFRbwF3WPG5hnJxrwFRv4Wm/JhqQFzny491UiOPGrDX5s+PEAOiDTayy2JkDgOirfT5MacB0WaXzEgMA7bda/nxRXMRy4Bon41sPUZqCiW2AdGPKz/4OGxKksqA6I+NHEWfHYWQ2oDts5H/gq/eG+nlcE8lzQYa8f3XV+mdlGET9tMUOYx+UwgJR6HGMwrVFALiPwdY+IBLwsXbDqIYwGmno3cI5yFU75PYCl/h/1h/psPca2nMOxtdwj2JG6B5Ngp/nPMaoaGYIHxF1juEzxvnN0RMNgB/nB+jxPkNMZMMwL/qGpBoLjUWdJcB+ON8gOZ9IfgXJBwuLeVmdFfX4ryeOL8G3LvTPdwPoh4at9nhju2xqYa0YsNl4xC+zxnnj7wjq83HwhSO7+d5R1YoFAoFF3/xXXYNtYTVRQAAAABJRU5ErkJggg==" alt="" class="ModelActionCard_icon__3fuUq">立即生图</div>"""
+
+注意要使用 MutationObserver 来监听 DOM 的变化，当“立即生图”按钮被添加到 DOM 中时，再添加“一键下载”按钮。
+
+将“一键下载”按钮的响应函数独立出来，这样我们只需要改这个函数即可。
+
+当用户点击该按钮后，触发点击“下载”按钮，元素如下所示：
+"""<div class="ModelActionCard_inner__XBdzk">下载</div>"""
+
+以下面这个元素的内容作为model_name：
+"""<span class="ModelInfoHead_title__p5txd">xxxxxx</span>"""
+
+在这个元素下面查找所有图片，将第一张图片下载，命名为model_name。其它所有图片下载，命名为model_name_preview_N，N为第几张图片：
+
+"""
+<div class="flex flex-nowrap w-full" style="transform: translate3d(0px, 0px, 0px);"><div class="relative flex items-center justify-center flex-shrink-0 flex-grow-0 basis-1/2 pr-2" style="transform: translate3d(0px, 0px, 0px);"><div class="flex items-center justify-center" style="width: 382px; max-height: 850px;"><div class="relative cursor-pointer"><img src="https://liblibai-online.vibrou.com/img/55caae8ef7bc475490ad1a520c041116/1db6b83fac79f1ce22ce1e374d5c323f85175b1287126ea65a7d78bf5c528fc9.png?x-oss-process=image/resize,w_764,m_lfit/format,webp" class="rounded-[13px]" style="max-height: 850px;"><span class="image-generate-info-hook ImageGenerateInfoPopover_generate__ZvFPW"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAACXBIWXMAABYlAAAWJQFJUiTwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAHySURBVHgB7VfRcYMwDBWdgBEYIRuUDZoNygbNCHSCjEA6Ad2A6wRkA6cTkA1U+yoX4bNsgy9f5d3pfAfi6fkJ2wCwY8eOx6KADUDEWg/POsxYURjcdVwpPoqiuMIjYYToGDAdSkezpkaSQ5q00kMHv45YmNl/0XijayXlvMDsmsFFx7t27Aa50GIONFOLgVoWe864eXHcOkAOSMxEhGY8wkqYlrEJTZtFmTYxMYralsO1XZRDIIqhtpypjSY6qZ0ezhJSQcR2NpWQc0YZ54Ao63oPKaCeW5wSxAw6WgrFrnfCsyeWU8f0ACOVCGtG2Hrut7GCOO9lCiJiuDuVkNNZZwI8Q2RSFavTQIBIhYgoZwy1k3JOMQdw3qNGfv3JybNv/jfIsDl3iCOUgw6fJ2Puv1kJpZDTJ7Sso5xP4X5yy0qcl6XU/yMje/Xcf4sVY4IVxvYjTFiWuDzxOxLZsEKig7hcpQ2kgBVU6Flt5OSIMgbfzHG5W4+QClzuqCPK71NDxScqNATaVGLCcRQSxa0dMe9wdR1d/dVgifhGuX5W4P2eaiAHJGpihF2KMHKFn3lTthhGXjmzNOhJbE33K3KDv1fc3byvRUFY6xEWghHVwqNBLvS4dIGLsO6lf4QRNv2XOeJM0b/zTf9ZpJxxO3b8H/wAidlVWD6NFwUAAAAASUVORK5CYII=" class="ImageGenerateInfoPopover_eye__2HUr_">生成信息</span></div></div></div><div class="relative flex items-center justify-center flex-shrink-0 flex-grow-0 basis-1/2 pr-2" style="transform: translate3d(0px, 0px, 0px);"><div class="flex items-center justify-center" style="width: 382px; max-height: 850px;"><div class="relative cursor-pointer">
+"""
+
+
+同时将这个元素下面的文字保存为model_name.md及model_name.txt。注意.md需要将HTML转为MD形式而.txt仅保存文本，不要含有HTML标签（注意处理换行等格式相关的标签，尽量保持格式）。
+
+"""
+<div class="ModelDescription_desc__EoTMz ModelDescription_descMore__KNAjk"></div>
+"""
+将其写成独立函数，并告诉我在哪里调用它。
+
+
+这样如何：我们选择mantine-AppShell-main元素，然后选择它的子元素。将它所有子元素转成txt或md。
+
+
+
+
+
+
+
+
+
+我在油猴脚本下面的代码中遇到困难：
+"""
+
+    function saveAsMarkdown(modelName) {
+        var descriptionElement = document.querySelector('.ModelDescription_desc__EoTMz.ModelDescription_descMore__KNAjk');
+        if (descriptionElement) {
+            var markdownText = convertHtmlToMarkdown(descriptionElement.innerHTML);
+            var blob = new Blob([markdownText], {type: 'text/markdown'});
+            var url = window.URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = modelName + '.md';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            console.log('Attempting to download markdown file:', link.download); // Added console.log
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            console.log('Description element not found.'); // Added console.log
+        }
+    }
+
+    function saveAsPlainText(modelName) {
+        var descriptionElement = document.querySelector('.ModelDescription_desc__EoTMz.ModelDescription_descMore__KNAjk');
+        if (descriptionElement) {
+            var plainText = descriptionElement.innerText;
+            var blob = new Blob([plainText], {type: 'text/plain'});
+            var url = window.URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = modelName + '.txt';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            console.log('Attempting to download text file:', link.download); // Added console.log
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            console.log('Description element not found.'); // Added console.log
+        }
+    }""" 原因是选择的这两个元素后缀是随机值，我想能不能通过选择它父元素或者使用通配符来选择元素。
+它的父元素如下：
+"""
+<main class="mantine-82i8b8 mantine-AppShell-main"><div class="uuid_modelInfoPage__7xJQR"><div class="ModelInfoHead_modelInfoHead__6avYs">
+"""
+
+
+
+把这段代码改成selectReadme函数，返回所选元素供两个函数使用。
+
+
+
+将上面的selectReadme函数改造一下，用通配符选择ModelDescription_desc*。
+
+
+
+
+
+
+
+更正一下，只需要下载img元素，并且像这样的图片是需要的：
+"""
+<img src="https://liblibai-online.vibrou.com/img/55caae8ef7bc475490ad1a520c041116/a6665ca9ba5ae95b96dc2c74f1058eb33bada6b6cf0b9c6dffa2aa59c5d02443.png?x-oss-process=image/resize,w_764,m_lfit/format,webp" class="rounded-[13px]" style="max-height: 850px;"><span class="image-generate-info-hook ImageGenerateInfoPopover_generate__ZvFPW">
+"""
+
+而这样的图片是不需要的：
+"""
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAACXBIWXMAABYlAAAWJQFJUiTwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAHySURBVHgB7VfRcYMwDBWdgBEYIRuUDZoNygbNCHSCjEA6Ad2A6wRkA6cTkA1U+yoX4bNsgy9f5d3pfAfi6fkJ2wCwY8eOx6KADUDEWg/POsxYURjcdVwpPoqiuMIjYYToGDAdSkezpkaSQ5q00kMHv45YmNl/0XijayXlvMDsmsFFx7t27Aa50GIONFOLgVoWe864eXHcOkAOSMxEhGY8wkqYlrEJTZtFmTYxMYralsO1XZRDIIqhtpypjSY6qZ0ezhJSQcR2NpWQc0YZ54Ao63oPKaCeW5wSxAw6WgrFrnfCsyeWU8f0ACOVCGtG2Hrut7GCOO9lCiJiuDuVkNNZZwI8Q2RSFavTQIBIhYgoZwy1k3JOMQdw3qNGfv3JybNv/jfIsDl3iCOUgw6fJ2Puv1kJpZDTJ7Sso5xP4X5yy0qcl6XU/yMje/Xcf4sVY4IVxvYjTFiWuDzxOxLZsEKig7hcpQ2kgBVU6Flt5OSIMgbfzHG5W4+QClzuqCPK71NDxScqNATaVGLCcRQSxa0dMe9wdR1d/dVgifhGuX5W4P2eaiAHJGpihF2KMHKFn3lTthhGXjmzNOhJbE33K3KDv1fc3byvRUFY6xEWghHVwqNBLvS4dIGLsO6lf4QRNv2XOeJM0b/zTf9ZpJxxO3b8H/wAidlVWD6NFwUAAAAASUVORK5CYII=" class="ImageGenerateInfoPopover_eye__2HUr_">
+"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
