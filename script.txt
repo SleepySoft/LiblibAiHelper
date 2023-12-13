@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         One Click Download
+// @name         LiblibAI Helper
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Add a one click download button
-// @author       You
+// @description  Download model, preview, model description by one-click
+// @author       Sleepy & NewBing
 // @match        https://www.liblib.art/modelinfo/*
 // @grant        none
 // ==/UserScript==
@@ -31,12 +31,31 @@
     observer.observe(document.body, { childList: true, subtree: true });
 
     function autoDownload() {
+        var version = getSelectedTabName();
         var modelName = document.querySelector('.ModelInfoHead_title__p5txd').innerText;
-        // downloadModel();
+
+        modelName += "_" + version
+
+        downloadModel();
         saveAsHTML(modelName);
         // saveAsMarkdown(modelName);
         saveAsPlainText(modelName);
         downloadImages(modelName)
+    }
+
+    function getSelectedTabName() {
+        // 获取所有的tab
+        var tabs = document.querySelectorAll('.ant-tabs-tab');
+
+        // 遍历所有的tab
+        for (var i = 0; i < tabs.length; i++) {
+            // 检查tab是否被选中
+            if (tabs[i].classList.contains('ant-tabs-tab-active')) {
+                // 获取tab的标题
+                var title = tabs[i].textContent;
+                return title;  // 返回标题
+            }
+        }
     }
 
     function downloadModel() {

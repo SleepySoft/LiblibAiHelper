@@ -114,8 +114,16 @@
 
 
 
+写一段JS脚本获取被选中的tab的显示标题，对应的元素如下：
 
 
+"""
+<div class="ant-tabs-nav-list" style="transform: translate(0px, 0px);"><div data-node-key="481303" class="ant-tabs-tab ant-tabs-tab-active"><div role="tab" aria-selected="true" class="ant-tabs-tab-btn" tabindex="0" id="rc-tabs-0-tab-481303" aria-controls="rc-tabs-0-panel-481303">v3</div></div><div data-node-key="320653" class="ant-tabs-tab"><div role="tab" aria-selected="false" class="ant-tabs-tab-btn" tabindex="0" id="rc-tabs-0-tab-320653" aria-controls="rc-tabs-0-panel-320653">v2</div></div><div data-node-key="31097" class="ant-tabs-tab"><div role="tab" aria-selected="false" class="ant-tabs-tab-btn" tabindex="0" id="rc-tabs-0-tab-31097" aria-controls="rc-tabs-0-panel-31097">v1</div></div><div class="ant-tabs-ink-bar ant-tabs-ink-bar-animated" style="left: 12px; transform: translateX(-50%); width: 24px;"></div></div>
+"""
+
+
+
+写成一个函数，叫getSelectedTabName返回它的标题。
 
 
 
