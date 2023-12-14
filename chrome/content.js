@@ -1,21 +1,81 @@
 // content.js
 'use strict';
 
+function getSelectedTabName() {
+    // 获取所有的tab
+    var tabs = document.querySelectorAll('.ant-tabs-tab');
+
+    // 遍历所有的tab
+    for (var i = 0; i < tabs.length; i++) {
+        // 检查tab是否被选中
+        if (tabs[i].classList.contains('ant-tabs-tab-active')) {
+            // 获取tab的标题
+            var title = tabs[i].textContent;
+            return title;  // 返回标题
+        }
+    }
+}
+
+function getModelName() {
+	var version = getSelectedTabName();
+	var modelName = document.querySelector('.ModelInfoHead_title__p5txd').innerText;
+	modelName += "_" + version;
+	return modelName;
+}
+
 // Create a MutationObserver to monitor DOM changes
 var observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-        if (mutation.type === 'childList') {
-            var generateButton = document.querySelector('.ModelActionCard_runPic__0I9wi');
-            if (generateButton && !document.querySelector('.one-click-download')) {
-                var downloadButton = document.createElement('div');
-                downloadButton.innerHTML = '一键下载';
-                downloadButton.className = 'one-click-download';
-                downloadButton.onclick = autoDownload;
-                generateButton.parentNode.insertBefore(downloadButton, generateButton.nextSibling);
-                observer.disconnect();
-            }
-        }
-    });
+	mutations.forEach(function(mutation) {
+		if (mutation.type === 'childList') {
+			var generateButton = document.querySelector('.ModelActionCard_runPic__0I9wi');
+			if (generateButton && !document.querySelector('.one-click-download')) {
+			
+				var downloadButton = document.createElement('button');
+				downloadButton.innerHTML = '一键下载';
+				downloadButton.className = 'one-click-download';
+				downloadButton.onclick = autoDownload;
+				
+				var modelName = getModelName();
+			
+				// 创建"仅下载图片"按钮
+				var downloadImageButton = document.createElement('button');
+				downloadImageButton.innerHTML = '仅下载图片';
+				downloadImageButton.className = 'download-images-only';
+				downloadImageButton.style = 'margin-left: 10px; display: inline-block;';
+				downloadImageButton.onclick = function() {
+					var imageCount = document.querySelector('.image-count-selector').value;
+					downloadImages(modelName, imageCount);
+				};
+
+				// 创建"仅下载文档"按钮
+				var downloadDocButton = document.createElement('button');
+				downloadDocButton.innerHTML = '仅下载文档';
+				downloadDocButton.className = 'download-doc-only';
+				downloadDocButton.style = 'margin-left: 10px; display: inline-block;';
+				downloadDocButton.onclick = function() {
+					saveAsHTML(modelName);
+					// saveAsMarkdown(modelName);
+					saveAsPlainText(modelName);
+				};
+
+				// 创建图片数量选择器
+				var imageCountSelector = document.createElement('input');
+				imageCountSelector.type = 'number';
+				imageCountSelector.min = '1';
+				imageCountSelector.value = '10';  // 默认值为10
+				imageCountSelector.className = 'image-count-selector';
+				imageCountSelector.style = 'margin-left: 10px; display: inline-block;';
+
+				// 将新的按钮和选择器添加到页面上
+				generateButton.parentNode.insertBefore(downloadButton, generateButton.nextSibling);
+				generateButton.parentNode.insertBefore(downloadImageButton, downloadButton.nextSibling);
+				generateButton.parentNode.insertBefore(downloadDocButton, downloadImageButton.nextSibling);
+				generateButton.parentNode.insertBefore(imageCountSelector, downloadImageButton.nextSibling);
+				
+				observer.disconnect();
+			}
+		}
+	});
 });
 
 observer.observe(document.body, { childList: true, subtree: true });
@@ -30,22 +90,7 @@ function autoDownload() {
     saveAsHTML(modelName);
     // saveAsMarkdown(modelName);
     saveAsPlainText(modelName);
-    downloadImages(modelName)
-}
-
-function getSelectedTabName() {
-    // 获取所有的tab
-    var tabs = document.querySelectorAll('.ant-tabs-tab');
-
-    // 遍历所有的tab
-    for (var i = 0; i < tabs.length; i++) {
-        // 检查tab是否被选中
-        if (tabs[i].classList.contains('ant-tabs-tab-active')) {
-            // 获取tab的标题
-            var title = tabs[i].textContent;
-            return title;  // 返回标题
-        }
-    }
+    downloadImages(modelName, 10)
 }
 
 function downloadModel() {
@@ -100,18 +145,17 @@ function saveAsPlainText(modelName) {
     }
 }
 
-async function downloadImages(modelName) {
+async function downloadImages(modelName, maxImages) {
     var images = document.querySelectorAll('img');
-    var count = 0;  // 添加一个新的变量来计数需要下载的图片
+    var count = 0;
     if (images.length > 0) {
-        for (var i = 0; i < images.length; i++) {
-            // 只处理src属性是URL的img元素
-            if (images[i].src.startsWith('http')) {
-                var response = await fetch(images[i].src);
-                var blob = await response.blob();
-                var url = window.URL.createObjectURL(blob);
-                chrome.runtime.sendMessage({action: "download", url: url, filename: modelName + (count === 0 ? '' : '_preview_' + count) + '.png'});
-                count++;  // 每下载一张图片，就增加count的值
+        for (var i = 0; i < images.length && count < maxImages; i++) {
+            if (images[i].src.startsWith('https://liblibai-online.vibrou.com/img/')) {
+                var url = new URL(images[i].src);
+                var cleanUrl = url.protocol + "//" + url.hostname + url.pathname;
+                chrome.runtime.sendMessage({action: "download", url: cleanUrl, filename: modelName + (count === 0 ? '' : '_preview_' + count) + '.png'});
+                count++;
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
         }
     }

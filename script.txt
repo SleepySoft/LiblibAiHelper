@@ -5,43 +5,11 @@
 // @description  Download model, preview, model description by one-click
 // @author       Sleepy & NewBing
 // @match        https://www.liblib.art/modelinfo/*
-// @grant        none
+// @grant        GM_download
 // ==/UserScript==
 
 (function() {
     'use strict';
-
-    // Create a MutationObserver to monitor DOM changes
-    var observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'childList') {
-                var generateButton = document.querySelector('.ModelActionCard_runPic__0I9wi');
-                if (generateButton && !document.querySelector('.one-click-download')) {
-                    var downloadButton = document.createElement('div');
-                    downloadButton.innerHTML = '一键下载';
-                    downloadButton.className = 'one-click-download';
-                    downloadButton.onclick = autoDownload;
-                    generateButton.parentNode.insertBefore(downloadButton, generateButton.nextSibling);
-                    observer.disconnect();
-                }
-            }
-        });
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    function autoDownload() {
-        var version = getSelectedTabName();
-        var modelName = document.querySelector('.ModelInfoHead_title__p5txd').innerText;
-
-        modelName += "_" + version
-
-        downloadModel();
-        saveAsHTML(modelName);
-        // saveAsMarkdown(modelName);
-        saveAsPlainText(modelName);
-        downloadImages(modelName)
-    }
 
     function getSelectedTabName() {
         // 获取所有的tab
@@ -57,6 +25,81 @@
             }
         }
     }
+	
+	function getModelName() {
+        var version = getSelectedTabName();
+        var modelName = document.querySelector('.ModelInfoHead_title__p5txd').innerText;
+        modelName += "_" + version;
+		return modelName;
+	}
+
+	// Create a MutationObserver to monitor DOM changes
+	var observer = new MutationObserver(function(mutations) {
+		mutations.forEach(function(mutation) {
+			if (mutation.type === 'childList') {
+				var generateButton = document.querySelector('.ModelActionCard_runPic__0I9wi');
+				if (generateButton && !document.querySelector('.one-click-download')) {
+				
+					var downloadButton = document.createElement('button');
+					downloadButton.innerHTML = '一键下载';
+					downloadButton.className = 'one-click-download';
+					downloadButton.onclick = autoDownload;
+					
+					var modelName = getModelName();
+				
+					// 创建"仅下载图片"按钮
+					var downloadImageButton = document.createElement('button');
+					downloadImageButton.innerHTML = '仅下载图片';
+					downloadImageButton.className = 'download-images-only';
+					downloadImageButton.style = 'margin-left: 10px; display: inline-block;';
+					downloadImageButton.onclick = function() {
+						var imageCount = document.querySelector('.image-count-selector').value;
+						downloadImages(modelName, imageCount);
+					};
+
+					// 创建"仅下载文档"按钮
+					var downloadDocButton = document.createElement('button');
+					downloadDocButton.innerHTML = '仅下载文档';
+					downloadDocButton.className = 'download-doc-only';
+					downloadDocButton.style = 'margin-left: 10px; display: inline-block;';
+					downloadDocButton.onclick = function() {
+						saveAsHTML(modelName);
+						// saveAsMarkdown(modelName);
+						saveAsPlainText(modelName);
+					};
+
+					// 创建图片数量选择器
+					var imageCountSelector = document.createElement('input');
+					imageCountSelector.type = 'number';
+					imageCountSelector.min = '1';
+					imageCountSelector.value = '10';  // 默认值为10
+					imageCountSelector.className = 'image-count-selector';
+					imageCountSelector.style = 'margin-left: 10px; display: inline-block;';
+
+					// 将新的按钮和选择器添加到页面上
+					generateButton.parentNode.insertBefore(downloadButton, generateButton.nextSibling);
+					generateButton.parentNode.insertBefore(downloadImageButton, downloadButton.nextSibling);
+					generateButton.parentNode.insertBefore(downloadDocButton, downloadImageButton.nextSibling);
+					generateButton.parentNode.insertBefore(imageCountSelector, downloadImageButton.nextSibling);
+					
+					observer.disconnect();
+				}
+			}
+		});
+	});
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    function autoDownload() {
+        var modelName = getModelName();
+
+        // downloadModel();
+        // saveAsHTML(modelName);
+        // saveAsMarkdown(modelName);
+        // saveAsPlainText(modelName);
+		var imageCount = document.querySelector('.image-count-selector').value;
+		downloadImages(modelName, imageCount);
+    }
 
     function downloadModel() {
         var downloadButton = document.querySelector('.ModelActionCard_inner__XBdzk');
@@ -65,33 +108,25 @@
         }
     }
 
-    async function downloadImages(modelName) {
-        var images = document.querySelectorAll('img');
-        var count = 0;  // 添加一个新的变量来计数需要下载的图片
-        if (images.length > 0) {
-            for (var i = 0; i < images.length; i++) {
-                // 只处理src属性是URL的img元素
-                if (images[i].src.startsWith('http')) {
-                    var response = await fetch(images[i].src);
-                    var blob = await response.blob();
-                    var url = window.URL.createObjectURL(blob);
-                    var link = document.createElement('a');
-                    link.href = url;
-                    link.download = modelName + (count === 0 ? '' : '_preview_' + count) + '.png';  // 使用count而不是i
-                    link.style.display = 'none';
-                    document.body.appendChild(link);
-                    // 使用 setTimeout 函数来延迟点击事件
-                    await new Promise(resolve => setTimeout(function() {
-                        link.click();
-                        document.body.removeChild(link);
-                        window.URL.revokeObjectURL(url);
-                        resolve();
-                    }, 1000));  // 这里的 1000 是延迟的毫秒数，你可以根据需要调整这个值
-                    count++;  // 每下载一张图片，就增加count的值
-                }
-            }
-        }
-    }
+	async function downloadImages(modelName, maxImages) {
+		var images = document.querySelectorAll('img');
+		var count = 0;
+		if (images.length > 0) {
+			for (var i = 0; i < images.length && count < maxImages; i++) {
+				if (images[i].src.startsWith('https://liblibai-online.vibrou.com/img/')) {
+					var url = new URL(images[i].src);
+					var cleanUrl = url.protocol + "//" + url.hostname + url.pathname;
+					GM_download({
+						url: cleanUrl,
+						name: modelName + (count === 0 ? '' : '_preview_' + count) + '.png',
+						saveAs: true
+					});
+					count++;
+					await new Promise(resolve => setTimeout(resolve, 1000));
+				}
+			}
+		}
+	}
 
     function selectReadme() {
         var mainElement = document.querySelector('.mantine-AppShell-main');

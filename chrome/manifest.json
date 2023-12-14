@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "LiblibAI Helper",
   "version": "0.1",
-  "permissions": ["downloads", "activeTab", "storage", "unlimitedStorage"],
+  "permissions": ["downloads", "https://liblibai-online.vibrou.com/*", "activeTab", "storage", "unlimitedStorage"],
   "background": {
     "service_worker": "background.js"
   },
