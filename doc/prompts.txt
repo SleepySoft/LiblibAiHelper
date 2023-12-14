@@ -147,3 +147,9 @@ chrome.downloads对象在环境中未定义，需要在background.js文件中处
 
 
 
+增加一个reocrdURL(modelName)函数，把当前模型所在的URL保存成modelName+"_URL.txt"。分别给出油猴和chrome的实现。
+
+
+
+
+

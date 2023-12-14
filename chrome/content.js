@@ -53,6 +53,7 @@ var observer = new MutationObserver(function(mutations) {
 				downloadDocButton.className = 'download-doc-only';
 				downloadDocButton.style = 'margin-left: 10px; display: inline-block;';
 				downloadDocButton.onclick = function() {
+					recordURL(modelName);
 					saveAsHTML(modelName);
 					// saveAsMarkdown(modelName);
 					saveAsPlainText(modelName);
@@ -81,16 +82,17 @@ var observer = new MutationObserver(function(mutations) {
 observer.observe(document.body, { childList: true, subtree: true });
 
 function autoDownload() {
-    var version = getSelectedTabName();
-    var modelName = document.querySelector('.ModelInfoHead_title__p5txd').innerText;
-
-    modelName += "_" + version
+    var modelName = getModelName();
 
     downloadModel();
+	
+	recordURL(modelName);
     saveAsHTML(modelName);
     // saveAsMarkdown(modelName);
     saveAsPlainText(modelName);
-    downloadImages(modelName, 10)
+	
+	var imageCount = document.querySelector('.image-count-selector').value;
+    downloadImages(modelName, imageCount)
 }
 
 function downloadModel() {
@@ -105,7 +107,11 @@ function selectReadme() {
     return mainElement.querySelector('[class^="ModelDescription_desc"]');
 }
 
-// content.js
+function recordURL(modelName) {
+    var url = window.location.href;
+    chrome.runtime.sendMessage({action: "recordURL", url: url, filename: modelName + '_URL.txt'});
+}
+
 function saveAsHTML(modelName) {
     var descriptionElement = selectReadme();
     if (descriptionElement) {
@@ -117,9 +123,6 @@ function saveAsHTML(modelName) {
         console.log('Description element not found.');
     }
 }
-
-// content.js
-'use strict';
 
 function saveAsMarkdown(modelName) {
     var descriptionElement = selectReadme();

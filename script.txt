@@ -63,6 +63,7 @@
 					downloadDocButton.className = 'download-doc-only';
 					downloadDocButton.style = 'margin-left: 10px; display: inline-block;';
 					downloadDocButton.onclick = function() {
+						recordURL(modelName);
 						saveAsHTML(modelName);
 						// saveAsMarkdown(modelName);
 						saveAsPlainText(modelName);
@@ -93,10 +94,13 @@
     function autoDownload() {
         var modelName = getModelName();
 
-        // downloadModel();
-        // saveAsHTML(modelName);
+        downloadModel();
+		
+		recordURL(modelName);
+        saveAsHTML(modelName);
         // saveAsMarkdown(modelName);
-        // saveAsPlainText(modelName);
+        saveAsPlainText(modelName);
+		
 		var imageCount = document.querySelector('.image-count-selector').value;
 		downloadImages(modelName, imageCount);
     }
@@ -132,6 +136,17 @@
         var mainElement = document.querySelector('.mantine-AppShell-main');
         return mainElement.querySelector('[class^="ModelDescription_desc"]');
     }
+	
+	function recordURL(modelName) {
+		var url = window.location.href;
+		var blob = new Blob([url], {type: 'text/plain'});
+		var urlObject = window.URL.createObjectURL(blob);
+		var downloadLink = document.createElement('a');
+		downloadLink.href = urlObject;
+		downloadLink.download = modelName + '_URL.txt';
+		downloadLink.click();
+		window.URL.revokeObjectURL(urlObject);
+	}
 
     function saveAsHTML(modelName) {
         var descriptionElement = selectReadme();
