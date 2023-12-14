@@ -1,26 +1,37 @@
 // content.js
 'use strict';
 
-function getSelectedTabName() {
-    // 获取所有的tab
-    var tabs = document.querySelectorAll('.ant-tabs-tab');
+function convertHtmlToMarkdown(html) {
+    // This is a very basic implementation and might not work for all HTML.
+    // Consider using a library like Turndown for a more robust solution.
+    var tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    return tempDiv.innerText;
+}
 
-    // 遍历所有的tab
-    for (var i = 0; i < tabs.length; i++) {
-        // 检查tab是否被选中
-        if (tabs[i].classList.contains('ant-tabs-tab-active')) {
-            // 获取tab的标题
-            var title = tabs[i].textContent;
-            return title;  // 返回标题
-        }
-    }
+function getSelectedTabName() {
+	// 获取所有的tab
+	var tabs = document.querySelectorAll('.ant-tabs-tab');
+
+	// 遍历所有的tab
+	for (var i = 0; i < tabs.length; i++) {
+		// 获取aria-selected属性
+		var isSelected = tabs[i].querySelector('.ant-tabs-tab-btn').getAttribute('aria-selected');
+
+		// 检查tab是否被选中
+		if (isSelected === 'true') {
+			// 获取tab的标题
+			var title = tabs[i].textContent;
+			return title;  // 返回标题
+		}
+	}
 }
 
 function getModelName() {
-	var version = getSelectedTabName();
-	var modelName = document.querySelector('.ModelInfoHead_title__p5txd').innerText;
-	modelName += "_" + version;
-	return modelName;
+    var version = getSelectedTabName();
+    var modelName = document.querySelector('.ModelInfoHead_title__p5txd').innerText;
+    modelName += "_" + version;
+    return modelName;
 }
 
 // Create a MutationObserver to monitor DOM changes
@@ -35,14 +46,13 @@ var observer = new MutationObserver(function(mutations) {
 				downloadButton.className = 'one-click-download';
 				downloadButton.onclick = autoDownload;
 				
-				var modelName = getModelName();
-			
 				// 创建"仅下载图片"按钮
 				var downloadImageButton = document.createElement('button');
 				downloadImageButton.innerHTML = '仅下载图片';
 				downloadImageButton.className = 'download-images-only';
 				downloadImageButton.style = 'margin-left: 10px; display: inline-block;';
 				downloadImageButton.onclick = function() {
+					var modelName = getModelName();
 					var imageCount = document.querySelector('.image-count-selector').value;
 					downloadImages(modelName, imageCount);
 				};
@@ -53,6 +63,7 @@ var observer = new MutationObserver(function(mutations) {
 				downloadDocButton.className = 'download-doc-only';
 				downloadDocButton.style = 'margin-left: 10px; display: inline-block;';
 				downloadDocButton.onclick = function() {
+					var modelName = getModelName();
 					recordURL(modelName);
 					saveAsHTML(modelName);
 					// saveAsMarkdown(modelName);
@@ -85,14 +96,14 @@ function autoDownload() {
     var modelName = getModelName();
 
     downloadModel();
-	
-	recordURL(modelName);
+    
+    recordURL(modelName);
     saveAsHTML(modelName);
     // saveAsMarkdown(modelName);
     saveAsPlainText(modelName);
-	
-	var imageCount = document.querySelector('.image-count-selector').value;
-    downloadImages(modelName, imageCount)
+    
+    var imageCount = document.querySelector('.image-count-selector').value;
+    downloadImages(modelName, imageCount);
 }
 
 function downloadModel() {
@@ -163,13 +174,4 @@ async function downloadImages(modelName, maxImages) {
         }
     }
 }
-
-function convertHtmlToMarkdown(html) {
-    // This is a very basic implementation and might not work for all HTML.
-    // Consider using a library like Turndown for a more robust solution.
-    var tempDiv = document.createElement('div');
-    tempDiv.innerHTML = html;
-    return tempDiv.innerText;
-}
-
 
