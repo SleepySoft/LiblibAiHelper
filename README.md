@@ -17,7 +17,7 @@ A Tampermonkey script to download Liblib model and its readme, preview by one cl
 
 油猴用法不多说，大家都懂。使用后会在“立即生图”下增加一个“一键下载”按钮（群众：你TM把这叫按钮？），点击即可。
 
-![img.png](doc/download_button_pos.png)
+![download_button_pos.png](doc/download_button_pos.png)
 
 已知的缺陷是：由于浏览器隐私政策，脚本中无法得到下载的文件名。因此我只能将标题当作模型名。
 
@@ -26,3 +26,16 @@ A Tampermonkey script to download Liblib model and its readme, preview by one cl
 后来我使用标题+Tab的方式决定文件名，没想到居然能对上，现在可以说没什么毛病了。
 
 欢迎各位大佬指教和改进，我是真的对JS一窍不通。
+
+------------------------------------------------------------------------------------------------------------------------
+
+为方便大家使用，我将油猴脚本转换为chrome脚本，放在chrome目录下。用法如下：
+
+在浏览器地址栏中输入：chrome://extensions/
+
+如图所示打开开发者模式，点击“Load unpacked”，选择这个chrome目录确定即可。
+
+![chrome_extension.png](doc/chrome_extension.png)
+
+理论上这个插件也能用在Edge上。
+
