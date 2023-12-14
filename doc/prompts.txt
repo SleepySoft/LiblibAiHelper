@@ -130,6 +130,11 @@
 
 
 
+帮我将油猴脚本改造成chrome插件。代码比较长，我会分次给出。
+先分段输出代码，再输出manifest，使用V3版本，只包含content，需要下载权限和其它你认为需要的权限。
+改造时注意油猴脚本和chrome插件之间的权限和API差别，需要将一些调用改成chrome api。知道了说：“是”
 
 
+
+chrome.downloads对象在环境中未定义，需要在background.js文件中处理下载操作。
 

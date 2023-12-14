@@ -93,36 +93,6 @@
         }
     }
 
-    /*
-    function downloadImages(modelName) {
-        var images = document.querySelectorAll('.flex img');
-        if (images.length > 0) {
-            fetch(images[0].src)
-                .then(response => response.blob())
-                .then(blob => {
-                var url = window.URL.createObjectURL(blob);
-                var link = document.createElement('a');
-                link.href = url;
-                link.download = modelName + '.png';
-                link.click();
-            });
-            for (var i = 1; i < images.length; i++) {
-                fetch(images[i].src)
-                    .then(response => response.blob())
-                    .then(blob => {
-                    var url = window.URL.createObjectURL(blob);
-                    var link = document.createElement('a');
-                    link.href = url;
-                    link.download = modelName + '_preview_' + i + '.png';
-                    window.setTimeout(function() {
-                        link.click();
-                        window.URL.revokeObjectURL(url);
-                    }, 0);
-                });
-            }
-        }
-    }*/
-
     function selectReadme() {
         var mainElement = document.querySelector('.mantine-AppShell-main');
         return mainElement.querySelector('[class^="ModelDescription_desc"]');
