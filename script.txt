@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LiblibAI Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.3
 // @description  Download model, preview, model description by one-click
 // @author       Sleepy & NewBing
 // @license      MIT
