@@ -152,4 +152,54 @@ chrome.downloads对象在环境中未定义，需要在background.js文件中处
 
 
 
+这是油猴脚本中的一个函数：
+
+	function getModelName() {
+        var version = getSelectedTabName();
+        var modelName = document.querySelector('.ModelInfoHead_title__p5txd').innerText;
+        modelName += "_" + version;
+		return modelName;
+	}
+当modelName中出现特殊字符时下载会有问题，我希望把作为下载文件名的特殊字符给替换成下划线，特殊字符也包括"/"和"\"。
+
+
+
+
+由于是获取所有图片，没有定位到具体的元素中，所以有可能下载到无关图片。我找到一个图片元素的示例：
+<div class="flex flex-nowrap w-full" style="transform: translate3d(-0.0008306px, 0px, 0px);"><div class="relative flex items-center justify-center flex-shrink-0 flex-grow-0 basis-1/2 pr-2" style="transform: translate3d(0px, 0px, 0px);"><div class="flex items-center justify-center" style="width: 382px; max-height: 850px;"><div class="relative cursor-pointer"><img src="https://liblibai-online.vibrou.com/e3af6d69d2e5d3322e9dd93590a6766c9f2062eb78694c1d0c1f7afb5b0d92d8.jpg?x-oss-process=image/resize,w_764,m_lfit/format,webp" class="rounded-[13px]" style="max-height: 850px;"><span class="image-generate-info-hook ImageGenerateInfoPopover_generate__ZvFPW"><img src="data:image/png;base64,iVBORw0KGgoA
+
+看起来是这样的：所有预览图包含在元素<div class="flex flex-nowrap w-full" style="transform: translate3d(-0.0008306px, 0px, 0px);">中
+每一个图片是<div class="relative flex items-center justify-center flex-shrink-0 flex-grow-0 basis-1/2 pr-2" style="transform: translate3d(0px, 0px, 0px);">及里面的内容。
+
+
+
+
+
+我觉得应该这么做：先选择flex flex-nowrap w-full，再结果中再选择img。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
